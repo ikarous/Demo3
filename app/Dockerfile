@@ -16,11 +16,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 #   - libffi-dev: Foreign Function Interface library (for cryptography)
 #   - openssl-dev: OpenSSL development files (for SSL/TLS support)
 #   - musl-dev: C standard library for Alpine Linux
+#   - netcat-openbsd: Netcat utility for network debugging and testing
 RUN apk add --no-cache \
     build-base \
     libffi-dev \
     openssl-dev \
-    musl-dev
+    musl-dev \
+    netcat-openbsd
 
 # ---- Application Setup ----
 # Set working directory inside the container
