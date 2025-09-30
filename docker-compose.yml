@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  # FastAPI application service
+  api:
+    build: ./app  # Build from Dockerfile in ./app directory
+    container_name: fastapi
+    # Publish only the API port to the outside world
+    ports:
+      - "8000:8000"  # Maps host port 8000 to container port 8000
+    environment:
+      # Environment variable for Memcached connection (not currently used in main.py)
+      # The app currently hardcodes 'memcached:11211' in the connection string
+      - MEMCACHED_ADDR=memcached:11211
+    depends_on:
+      # Ensures memcached starts before the API service
+      # Note: This only waits for container start, not for memcached to be ready
+      - memcached
+    networks:
+      # Connected to both networks:
+      - public    # For external access (not strictly necessary without other public services)
+      - internal  # For communication with memcached
+
+  # Memcached service for user data storage
+  memcached:
+    image: memcached:1.6  # Official memcached image from Docker Hub
+    container_name: memcached
+    # IMPORTANT: No "ports" mapping here — memcached is only accessible internally
+    # This prevents external access and keeps the data store secure
+    # "expose" documents which port is available to other containers (optional)
+    expose:
+      - "11211"  # Standard memcached port
+    networks:
+      # Only connected to internal network - not accessible from host
+      - internal
+    # Optional: Configure memcached memory limit
+    # Uncomment to limit cache size (default is 64MB)
+    # command: ["-m", "128"]  # Set max memory to 128MB
+
+# Network definitions
+networks:
+  # Public network for external-facing services
+  # Currently only used by the API service
+  public:
+    driver: bridge
+  # Internal network for service-to-service communication
+  # API ←→ Memcached communication happens here
+  internal:
+    driver: bridge
